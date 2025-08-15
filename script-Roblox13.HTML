@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>موقع سكربتات</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e1e1e, #3a3a3a);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    margin-top: 30px;
+    text-align: center;
+    text-shadow: 0 0 10px #00ffff;
+    animation: glow 2s infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 20px #00ffff; }
+    to { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff; }
+  }
+
+  .button-container {
+    margin-top: 50px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    width: 90%;
+  }
+
+  .script-button {
+    background: #00ffff;
+    color: #1e1e1e;
+    border: none;
+    padding: 15px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px #00ffff;
+  }
+
+  .script-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #00ffff;
+  }
+
+  iframe {
+    margin-top: 40px;
+    width: 90%;
+    height: 500px;
+    border: 2px solid #00ffff;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00ffff;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>موقع سكربتات رهيب</h1>
+
+<div class="button-container" id="Main"></div>
+
+<iframe id="scriptFrame"></iframe>
+
+<script>
+  // دالة لإضافة زر بسهولة مثل AddButton
+  function AddButton(container, { Name, Callback }) {
+    const btn = document.createElement('button');
+    btn.classList.add('script-button');
+    btn.textContent = Name;
+    btn.onclick = Callback;
+    container.appendChild(btn);
+  }
+
+  const Main = document.getElementById('Main');
+  const iframe = document.getElementById('scriptFrame');
+
+  // مثال على إضافة أزرار
+  AddButton(Main, {
+    Name: "فتح سكربت RAW",
+    Callback: function() {
+      iframe.src = "https://raw.githubusercontent.com/Y0dp/R7/refs/heads/main/TT.Lua";
+      iframe.style.display = "block";
+    }
+  });
+
+  AddButton(Main, {
+    Name: "زر تجريبي 2",
+    Callback: function() {
+      alert("هذا زر تجريبي آخر!");
+    }
+  });
+
+
+</script>
+
+</body>
+</html>
