@@ -383,7 +383,7 @@ Stroke(Menu)
   
   local Minimize_BTN = Create("ImageButton", ButtonsFrame, {
     Image = "rbxassetid://89552445639018",
-    Size = UDim2.new(0.5, 0, 1, 0),
+    Size = UDim2.new(0, 22, 0, 22)
     BackgroundTransparency = 1,
 })
 
