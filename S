@@ -55,6 +55,8 @@ local function Stroke(parent, props)
     gradient.Rotation = 0
     gradient.Parent = new
 
+    new.Color = gradient
+
     coroutine.wrap(function()
         while new.Parent do
             gradient.Rotation = (gradient.Rotation + 1) % 360
