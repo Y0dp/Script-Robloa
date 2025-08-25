@@ -42,31 +42,30 @@ local function Corner(parent, props)
 end
 
 local function Stroke(parent, props)
-  local new = Create("UIStroke", parent)
-  new.Color = Configs_HUB.Cor_Stroke
-  new.ApplyStrokeMode = "Border"
-  new.Thickness = 2
-  
-  local gradient = Instance.new("UIGradient")
-  gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 0, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 200)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
-}
-  gradient.Rotation = 0
-  gradient.Parent = new
-  
-  coroutine.wrap(function()
-    while new.Parent do
-      gradient.Rotation = (gradient.Rotation + 1) % 360
-      RunService.RenderStepped:Wait()
+    local new = Create("UIStroke", parent)
+    new.ApplyStrokeMode = "Border"
+    new.Thickness = 2
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 0, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
+    }
+    gradient.Rotation = 0
+    gradient.Parent = new
+
+    coroutine.wrap(function()
+        while new.Parent do
+            gradient.Rotation = (gradient.Rotation + 1) % 360
+            RunService.RenderStepped:Wait()
+        end
+    end)()
+
+    if props then
+        SetProps(new, props)
     end
-  end)()
-  
-  if props then
-    SetProps(new, props)
-  end
-  return new
+    return new
 end
 
 local function CreateTween(instance, prop, value, time, tweenWait)
