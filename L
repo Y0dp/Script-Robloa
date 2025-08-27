@@ -7,6 +7,49 @@ local Configs_HUB = {
   Corner_Radius = UDim.new(0, 15), 
   Text_Font = Enum.Font.FredokaOne 
 }
+local Themes = {
+    ["أحمر وأسود"] = {
+        Cor_Hub = Color3.fromRGB(0,0,0),
+        Cor_Options = Color3.fromRGB(40,40,40),
+        Cor_Stroke = Color3.fromRGB(255,0,0),
+        Cor_Text = Color3.fromRGB(255,255,255),
+        Cor_DarkText = Color3.fromRGB(200,200,200)
+    },
+    ["أصفر وأسود"] = {
+        Cor_Hub = Color3.fromRGB(0,0,0),
+        Cor_Options = Color3.fromRGB(40,40,40),
+        Cor_Stroke = Color3.fromRGB(255,255,0),
+        Cor_Text = Color3.fromRGB(255,255,255),
+        Cor_DarkText = Color3.fromRGB(200,200,200)
+    },
+    ["أزرق وأسود"] = {
+        Cor_Hub = Color3.fromRGB(0,0,0),
+        Cor_Options = Color3.fromRGB(40,40,40),
+        Cor_Stroke = Color3.fromRGB(0,0,255),
+        Cor_Text = Color3.fromRGB(255,255,255),
+        Cor_DarkText = Color3.fromRGB(200,200,200)
+    }
+}
+
+function ApplyTheme(themeName)
+    local theme = Themes[themeName]
+    if not theme then return end
+    for k,v in pairs(theme) do
+        Configs_HUB[k] = v
+    end
+
+    for _,obj in pairs(ScreenGui:GetDescendants()) do
+        if obj:IsA("Frame") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+            if obj.BackgroundColor3 == Configs_HUB.Cor_Hub or obj.BackgroundColor3 == Configs_HUB.Cor_Options then
+                obj.BackgroundColor3 = theme.Cor_Options
+            end
+        elseif obj:IsA("TextLabel") then
+            obj.TextColor3 = theme.Cor_Text
+        elseif obj:IsA("UIStroke") then
+            obj.Color = theme.Cor_Stroke
+        end
+    end
+end
 
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
