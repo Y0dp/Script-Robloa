@@ -795,7 +795,7 @@ end
     local ToggleName = Configs.Name or "Toggle!!"
     local Default = Configs.Default or false
     local Callback = Configs.Callback or function() end
-    
+
     local TextButton = Create("TextButton", parent, {
         Size = UDim2.new(1, 0, 0, 25),
         BackgroundColor3 = Configs_HUB.Cor_Options,
@@ -805,28 +805,27 @@ end
         BackgroundTransparency = 0.4
     }) 
     Corner(TextButton, {CornerRadius = UDim.new(0, 6)})
-    Stroke(TextButton, {Thickness = 1.5, Transparency = 0.5})
-    
+
     local TextLabel = Create("TextLabel", TextButton, {
         TextSize = 14,
         TextColor3 = Configs_HUB.Cor_Text,
         Text = ToggleName,
-        Size = UDim2.new(1, -35, 1, 0),
-        Position = UDim2.new(0, 35, 0, 0),
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
         BackgroundTransparency = 1,
         TextXAlignment = "Left",
         Font = Configs_HUB.Text_Font
     })
-    
+
     local Frame1 = Create("Frame", TextButton, {
-        Size = UDim2.new(0, 36, 0, 16),
-        Position = UDim2.new(0, 5, 0.5, 0),
+        Size = UDim2.new(0, 32, 0, 16),
+        Position = UDim2.new(1, -38, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
         BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     })
     Corner(Frame1, {CornerRadius = UDim.new(1, 0)})
-    local Stroke = Stroke(Frame1, {Thickness = 2, Color = Configs_HUB.Cor_Stroke})
-    
+    local Stroke = Stroke(Frame1, {Thickness = 1.5, Color = Configs_HUB.Cor_Stroke})
+
     local Frame2 = Create("Frame", Frame1, {
         Size = UDim2.new(0, 14, 0, 14),
         Position = UDim2.new(0, 2, 0.5, 0),
@@ -834,38 +833,31 @@ end
         BackgroundColor3 = Configs_HUB.Cor_Stroke
     })
     Corner(Frame2, {CornerRadius = UDim.new(1, 0)})
-    
+
     local OnOff = false
-    
+
     local function SetState(state)
         OnOff = state
         if OnOff then
-            CreateTween(Frame2, "Position", UDim2.new(1, -16, 0.5, 0), 0.25, true)
-            CreateTween(Frame2, "BackgroundColor3", Color3.fromRGB(30, 140, 255), 0.25, true)
-            CreateTween(Frame1, "BackgroundColor3", Color3.fromRGB(20, 60, 120), 0.25, true)
-            CreateTween(TextLabel, "TextColor3", Color3.fromRGB(30, 140, 255), 0.25, true)
+            CreateTween(Frame2, "Position", UDim2.new(1, -16, 0.5, 0), 0.2, true)
+            CreateTween(Frame2, "BackgroundColor3", Color3.fromRGB(30, 140, 255), 0.2, true)
+            CreateTween(Frame1, "BackgroundColor3", Color3.fromRGB(20, 60, 120), 0.2, true)
+            CreateTween(TextLabel, "TextColor3", Color3.fromRGB(30, 140, 255), 0.2, true)
         else
-            CreateTween(Frame2, "Position", UDim2.new(0, 2, 0.5, 0), 0.25, true)
-            CreateTween(Frame2, "BackgroundColor3", Configs_HUB.Cor_Stroke, 0.25, true)
-            CreateTween(Frame1, "BackgroundColor3", Color3.fromRGB(60, 60, 60), 0.25, true)
-            CreateTween(TextLabel, "TextColor3", Configs_HUB.Cor_Text, 0.25, true)
+            CreateTween(Frame2, "Position", UDim2.new(0, 2, 0.5, 0), 0.2, true)
+            CreateTween(Frame2, "BackgroundColor3", Configs_HUB.Cor_Stroke, 0.2, true)
+            CreateTween(Frame1, "BackgroundColor3", Color3.fromRGB(60, 60, 60), 0.2, true)
+            CreateTween(TextLabel, "TextColor3", Configs_HUB.Cor_Text, 0.2, true)
         end
         Callback(OnOff)
     end
-    
+
     SetState(Default)
-    
+
     TextButton.MouseButton1Click:Connect(function()
         SetState(not OnOff)
     end)
-    
-    TextButton.MouseEnter:Connect(function()
-        CreateTween(TextButton, "BackgroundTransparency", 0.2, 0.15, true)
-    end)
-    TextButton.MouseLeave:Connect(function()
-        CreateTween(TextButton, "BackgroundTransparency", 0.4, 0.15, true)
-    end)
-    
+
     return {Frame2, Stroke, OnOff, Callback, SetState}
 end
   
