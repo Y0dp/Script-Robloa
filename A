@@ -804,13 +804,14 @@ end
         AutoButtonColor = false,
         BackgroundTransparency = 0.4
     }) 
-    Corner(TextButton, {CornerRadius = UDim.new(0, 6)})
+    Corner(TextButton, {CornerRadius = UDim.new(0, 8)})
+    Stroke(TextButton, {Thickness = 1.5, Color = Configs_HUB.Cor_Stroke, Transparency = 0.5})
 
     local TextLabel = Create("TextLabel", TextButton, {
         TextSize = 14,
         TextColor3 = Configs_HUB.Cor_Text,
         Text = ToggleName,
-        Size = UDim2.new(1, -40, 1, 0),
+        Size = UDim2.new(1, -45, 1, 0),
         Position = UDim2.new(0, 10, 0, 0),
         BackgroundTransparency = 1,
         TextXAlignment = "Left",
@@ -824,7 +825,7 @@ end
         BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     })
     Corner(Frame1, {CornerRadius = UDim.new(1, 0)})
-    local Stroke = Stroke(Frame1, {Thickness = 1.5, Color = Configs_HUB.Cor_Stroke})
+    local Stroke = Stroke(Frame1, {Thickness = 2, Color = Configs_HUB.Cor_Stroke})
 
     local Frame2 = Create("Frame", Frame1, {
         Size = UDim2.new(0, 14, 0, 14),
