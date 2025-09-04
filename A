@@ -965,7 +965,7 @@ end
         BackgroundColor3 = Configs_HUB.Cor_Options,
         Name = "Frame",
         Text = "",
-        BackgroundTransparency = 0.5
+        BackgroundTransparency = 1
     }) Corner(Frame) Stroke(Frame)
 
     local TextLabel = Create("TextLabel", Frame, {
