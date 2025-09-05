@@ -351,9 +351,9 @@ function MakeWindow(Configs)
   end
   
 local Menu = Create("ImageLabel", ScreenGui, {
-    BackgroundTransparency = 1,
+    BackgroundTransparency = 1, 
     Image = "rbxassetid://"..87622695427846,
-    ImageTransparency = 0.3,
+    ImageTransparency = 1,
     Size = UDim2.new(0, 500, 0, 270),
     Position = UDim2.new(0.5, -500/2, 0.5, -270/2),
     Active = true,
@@ -361,6 +361,10 @@ local Menu = Create("ImageLabel", ScreenGui, {
 })
 Corner(Menu)
 Stroke(Menu)
+
+task.delay(2, function()
+    CreateTween(Menu, "ImageTransparency", 0.2, 0.8, false)
+end)
   
   local TopBar = Create("Frame", Menu, {
     BackgroundTransparency = 1,
