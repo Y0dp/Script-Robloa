@@ -1,7 +1,7 @@
 local Configs_HUB = {
   Cor_Hub = Color3.fromRGB(0, 0, 0),
   Cor_Options = Color3.fromRGB(60, 60, 60),
-  Cor_Stroke = Color3.fromRGB(250, 0, 0), 
+  Cor_Stroke = Color3.fromRGB(255, 192, 203), 
   Cor_Text = Color3.fromRGB(240, 240, 240), 
   Cor_DarkText = Color3.fromRGB(240, 240, 240), 
   Corner_Radius = UDim.new(0, 15), 
@@ -352,7 +352,7 @@ function MakeWindow(Configs)
   
 local Menu = Create("ImageLabel", ScreenGui, {
     BackgroundTransparency = 1, 
-    Image = "rbxassetid://"..104713642999446,
+    Image = "rbxassetid://"..80237609010337,
     ImageTransparency = 1,
     Size = UDim2.new(0, 500, 0, 270),
     Position = UDim2.new(0.5, -500/2, 0.5, -270/2),
