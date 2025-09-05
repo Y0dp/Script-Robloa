@@ -1,7 +1,7 @@
 local Configs_HUB = {
   Cor_Hub = Color3.fromRGB(0, 0, 0),
   Cor_Options = Color3.fromRGB(60, 60, 60),
-  Cor_Stroke = Color3.fromRGB(80, 80, 80), 
+  Cor_Stroke = Color3.fromRGB(60, 60, 60), 
   Cor_Text = Color3.fromRGB(240, 240, 240), 
   Cor_DarkText = Color3.fromRGB(240, 240, 240), 
   Corner_Radius = UDim.new(0, 15), 
@@ -52,7 +52,7 @@ local function Stroke(parent, props)
     ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
     ColorSequenceKeypoint.new(0.3, Color3.fromRGB(80, 80, 80)),
     ColorSequenceKeypoint.new(0.7, Color3.fromRGB(120, 120, 120)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 100, 100))
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 150, 150))
 }
   gradient.Rotation = 0
   gradient.Parent = new
