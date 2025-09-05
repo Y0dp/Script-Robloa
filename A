@@ -360,7 +360,14 @@ local Menu = Create("ImageLabel", ScreenGui, {
     Draggable = true
 })
 Corner(Menu)
-Stroke(Menu)
+
+local StrokeMenu = Stroke(Menu)
+StrokeMenu.Transparency = 1
+
+task.delay(2, function()
+    CreateTween(Menu, "ImageTransparency", 0.2, 0.8, false)
+    CreateTween(StrokeMenu, "Transparency", 0, 0.8, false)
+end)
 
 task.delay(2, function()
     CreateTween(Menu, "ImageTransparency", 0.2, 0.8, false)
