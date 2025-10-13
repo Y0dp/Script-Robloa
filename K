@@ -1,0 +1,452 @@
+local TurtleUILibrary = {}
+local windowCount = 0
+local sizes = {}
+local listOffset = {}
+local windows = {}
+local pastSliders = {}
+local dropdowns = {}
+local dropdownSizes = {}
+local destroyed = false
+
+local colorPickers = {}
+local connections = {}
+
+-- الألوان الرئيسية للمكتبة
+local themeColors = {
+    primary = Color3.fromRGB(0, 151, 230),
+    secondary = Color3.fromRGB(0, 168, 255),
+    background = Color3.fromRGB(47, 54, 64),
+    element = Color3.fromRGB(53, 59, 72),
+    border = Color3.fromRGB(113, 128, 147),
+    text = Color3.fromRGB(245, 246, 250),
+    accent = Color3.fromRGB(76, 209, 55)
+}
+
+-- حماية الواجهة
+if game.CoreGui:FindFirstChild('TurtleUiLib') then
+    game.CoreGui:FindFirstChild('TurtleUiLib'):Destroy()
+    destroyed = true
+end
+
+-- وظائف مساعدة
+local function Lerp(a, b, c)
+    return a + ((b - a) * c)
+end
+
+local function Tween(obj, properties, duration, style, direction)
+    style = style or Enum.EasingStyle.Quad
+    direction = direction or Enum.EasingDirection.Out
+    
+    local tweenInfo = TweenInfo.new(duration or 0.2, style, direction)
+    local tween = game:GetService("TweenService"):Create(obj, tweenInfo, properties)
+    tween:Play()
+    return tween
+end
+
+local players = game:GetService("Players")
+local player = players.LocalPlayer
+local mouse = player:GetMouse()
+local run = game:GetService("RunService")
+local stepped = run.Stepped
+local uis = game:GetService("UserInputService")
+local tweenService = game:GetService("TweenService")
+
+-- وظيفة السحب
+function Dragify(obj)
+    task.spawn(function()
+        local minitial, initial, isdragging
+        local connection
+        
+        obj.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isdragging = true
+                minitial = input.Position
+                initial = obj.Position
+                
+                connection = stepped:Connect(function()
+                    if isdragging then
+                        local delta = Vector3.new(mouse.X, mouse.Y, 0) - minitial
+                        obj.Position = UDim2.new(
+                            initial.X.Scale, 
+                            initial.X.Offset + delta.X, 
+                            initial.Y.Scale, 
+                            initial.Y.Offset + delta.Y
+                        )
+                    else
+                        connection:Disconnect()
+                    end
+                end)
+                
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        isdragging = false
+                    end
+                end)
+            end
+        end)
+    end)
+end
+
+-- حماية الواجهة
+local function protect_gui(obj)
+    if destroyed then
+        obj.Parent = game.CoreGui
+        return
+    end
+    
+    if syn and syn.protect_gui then
+        syn.protect_gui(obj)
+        obj.Parent = game.CoreGui
+    elseif gethui then
+        obj.Parent = gethui()
+    else
+        obj.Parent = game.CoreGui
+    end
+end
+
+-- إنشاء الواجهة الرئيسية
+local TurtleUiLib = Instance.new("ScreenGui")
+TurtleUiLib.Name = "TurtleUiLib"
+TurtleUiLib.ResetOnSpawn = false
+TurtleUiLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+protect_gui(TurtleUiLib)
+
+-- المتغيرات العامة
+local xOffset = 20
+local keybindConnection
+
+-- وظائف المكتبة الرئيسية
+function TurtleUILibrary:Destroy()
+    TurtleUiLib:Destroy()
+    for _, connection in pairs(connections) do
+        connection:Disconnect()
+    end
+    if keybindConnection then
+        keybindConnection:Disconnect()
+    end
+end
+
+function TurtleUILibrary:Keybind(key)
+    if keybindConnection then 
+        keybindConnection:Disconnect() 
+    end
+
+    keybindConnection = uis.InputBegan:Connect(function(input, gp)  
+        if not gp and input.KeyCode == Enum.KeyCode[key] then  
+            TurtleUiLib.Enabled = not TurtleUiLib.Enabled  
+        end  
+    end)
+end
+
+function TurtleUILibrary:Window(name)
+    windowCount = windowCount + 1
+    local winCount = windowCount
+    local zindex = winCount * 7
+    
+    -- النافذة الرئيسية
+    local UiWindow = Instance.new("Frame")
+    UiWindow.Name = "UiWindow"  
+    UiWindow.Parent = TurtleUiLib  
+    UiWindow.BackgroundColor3 = themeColors.primary
+    UiWindow.BorderSizePixel = 0
+    UiWindow.Position = UDim2.new(0, xOffset, 0, 20)  
+    UiWindow.Size = UDim2.new(0, 220, 0, 35)  
+    UiWindow.ZIndex = 4 + zindex  
+    UiWindow.Active = true
+    
+    -- زوايا مستديرة
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 6)
+    uiCorner.Parent = UiWindow
+    
+    -- تأثير ظل
+    local uiShadow = Instance.new("UIStroke")
+    uiShadow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    uiShadow.Color = Color3.fromRGB(0, 0, 0)
+    uiShadow.Transparency = 0.8
+    uiShadow.Thickness = 2
+    uiShadow.Parent = UiWindow
+    
+    Dragify(UiWindow)  
+    xOffset = xOffset + 240
+
+    -- رأس النافذة
+    local Header = Instance.new("Frame")  
+    Header.Name = "Header"  
+    Header.Parent = UiWindow  
+    Header.BackgroundColor3 = themeColors.secondary
+    Header.BorderSizePixel = 0
+    Header.Position = UDim2.new(0, 0, 0, 0)  
+    Header.Size = UDim2.new(1, 0, 0, 30)  
+    Header.ZIndex = 5 + zindex
+    
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 6)
+    headerCorner.Parent = Header
+
+    -- نص العنوان
+    local HeaderText = Instance.new("TextLabel")  
+    HeaderText.Name = "HeaderText"  
+    HeaderText.Parent = Header  
+    HeaderText.BackgroundTransparency = 1
+    HeaderText.Position = UDim2.new(0, 10, 0, 0)  
+    HeaderText.Size = UDim2.new(0, 160, 1, 0)  
+    HeaderText.ZIndex = 6 + zindex  
+    HeaderText.Font = Enum.Font.GothamSemibold
+    HeaderText.Text = name or "Window"  
+    HeaderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HeaderText.TextSize = 16
+    HeaderText.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- زر التصغير
+    local Minimise = Instance.new("TextButton")  
+    local Window = Instance.new("Frame")  
+    Minimise.Name = "Minimise"  
+    Minimise.Parent = Header  
+    Minimise.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Minimise.BackgroundTransparency = 0.8
+    Minimise.BorderSizePixel = 0
+    Minimise.Position = UDim2.new(1, -25, 0, 5)  
+    Minimise.Size = UDim2.new(0, 20, 0, 20)  
+    Minimise.ZIndex = 7 + zindex  
+    Minimise.Font = Enum.Font.GothamBold
+    Minimise.Text = "-"  
+    Minimise.TextColor3 = themeColors.primary
+    Minimise.TextSize = 16
+    
+    local minimiseCorner = Instance.new("UICorner")
+    minimiseCorner.CornerRadius = UDim.new(1, 0)
+    minimiseCorner.Parent = Minimise
+
+    -- منطقة المحتوى
+    Window.Name = "Window"  
+    Window.Parent = UiWindow  
+    Window.BackgroundColor3 = themeColors.background
+    Window.BorderSizePixel = 0
+    Window.Position = UDim2.new(0, 0, 0, 30)  
+    Window.Size = UDim2.new(1, 0, 0, 35)  
+    Window.ZIndex = 1 + zindex
+    Window.ClipsDescendants = true
+    
+    local windowCorner = Instance.new("UICorner")
+    windowCorner.CornerRadius = UDim.new(0, 6)
+    windowCorner.Parent = Window
+
+    -- التحكم في التصغير
+    Minimise.MouseButton1Click:Connect(function()  
+        if Window.Visible then  
+            Tween(Window, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
+            task.wait(0.2)
+            Window.Visible = false
+            Tween(UiWindow, {Size = UDim2.new(0, 220, 0, 30)}, 0.2)
+            Minimise.Text = "+"  
+        else  
+            Window.Visible = true
+            Tween(UiWindow, {Size = UDim2.new(0, 220, 0, sizes[winCount] + 40)}, 0.2)
+            Tween(Window, {Size = UDim2.new(1, 0, 0, sizes[winCount] + 10)}, 0.2)
+            Minimise.Text = "-"  
+        end  
+    end)
+
+    -- تهيئة المتغيرات
+    local functions = {}  
+    sizes[winCount] = 0
+    listOffset[winCount] = 10
+    
+    -- وظيفة الزر
+    function functions:Button(name, callback)  
+        local name = name or "Button"  
+        local callback = callback or function() end  
+
+        sizes[winCount] = sizes[winCount] + 35
+        Window.Size = UDim2.new(1, 0, 0, sizes[winCount] + 10)
+        UiWindow.Size = UDim2.new(0, 220, 0, sizes[winCount] + 40)
+
+        local Button = Instance.new("TextButton")  
+        listOffset[winCount] = listOffset[winCount] + 35
+        Button.Name = "Button"  
+        Button.Parent = Window  
+        Button.BackgroundColor3 = themeColors.element
+        Button.BorderSizePixel = 0
+        Button.Position = UDim2.new(0, 10, 0, listOffset[winCount])  
+        Button.Size = UDim2.new(1, -20, 0, 30)  
+        Button.ZIndex = 2 + zindex  
+        Button.AutoButtonColor = false
+        Button.Font = Enum.Font.Gotham
+        Button.TextColor3 = themeColors.text
+        Button.TextSize = 14
+        Button.Text = name
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 4)
+        buttonCorner.Parent = Button
+        
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Color = themeColors.border
+        buttonStroke.Thickness = 1
+        buttonStroke.Parent = Button
+        
+        -- تأثيرات الزر
+        Button.MouseEnter:Connect(function()
+            Tween(Button, {BackgroundColor3 = Color3.fromRGB(63, 69, 82)}, 0.1)
+        end)
+        
+        Button.MouseLeave:Connect(function()
+            Tween(Button, {BackgroundColor3 = themeColors.element}, 0.1)
+        end)
+        
+        Button.MouseButton1Down:Connect(function()
+            Tween(Button, {BackgroundColor3 = Color3.fromRGB(43, 49, 62)}, 0.1)
+        end)
+        
+        Button.MouseButton1Up:Connect(function()
+            Tween(Button, {BackgroundColor3 = Color3.fromRGB(63, 69, 82)}, 0.1)
+            callback()
+        end)
+
+        pastSliders[winCount] = false  
+    end
+    
+    -- وظيفة النص
+    function functions:Label(text, color)  
+        local color = color or themeColors.text
+
+        sizes[winCount] = sizes[winCount] + 30
+        Window.Size = UDim2.new(1, 0, 0, sizes[winCount] + 10)
+        UiWindow.Size = UDim2.new(0, 220, 0, sizes[winCount] + 40)
+
+        listOffset[winCount] = listOffset[winCount] + 30
+        local Label = Instance.new("TextLabel")  
+        Label.Name = "Label"  
+        Label.Parent = Window  
+        Label.BackgroundTransparency = 1
+        Label.Position = UDim2.new(0, 10, 0, listOffset[winCount])  
+        Label.Size = UDim2.new(1, -20, 0, 25)  
+        Label.Font = Enum.Font.Gotham
+        Label.Text = text or "Label"  
+        Label.TextSize = 14
+        Label.TextColor3 = color
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.ZIndex = 2 + zindex
+
+        -- تأثير تلوين قوس قزح
+        if type(color) == "boolean" and color then  
+            task.spawn(function()  
+                while Label and Label.Parent do
+                    task.wait()
+                    local hue = tick() % 5 / 5
+                    Label.TextColor3 = Color3.fromHSV(hue, 1, 1)  
+                end  
+            end)  
+        end
+        
+        pastSliders[winCount] = false  
+    end
+    
+    -- وظيفة التبديل
+    function functions:Toggle(text, on, callback)  
+        local callback = callback or function() end  
+        local isToggled = on or false
+
+        sizes[winCount] = sizes[winCount] + 35
+        Window.Size = UDim2.new(1, 0, 0, sizes[winCount] + 10)
+        UiWindow.Size = UDim2.new(0, 220, 0, sizes[winCount] + 40)
+
+        listOffset[winCount] = listOffset[winCount] + 35
+
+        local ToggleContainer = Instance.new("Frame")
+        ToggleContainer.Name = "ToggleContainer"
+        ToggleContainer.Parent = Window
+        ToggleContainer.BackgroundTransparency = 1
+        ToggleContainer.Position = UDim2.new(0, 10, 0, listOffset[winCount])
+        ToggleContainer.Size = UDim2.new(1, -20, 0, 30)
+        ToggleContainer.ZIndex = 2 + zindex
+
+        local ToggleDescription = Instance.new("TextLabel")  
+        ToggleDescription.Name = "ToggleDescription"  
+        ToggleDescription.Parent = ToggleContainer
+        ToggleDescription.BackgroundTransparency = 1
+        ToggleDescription.Position = UDim2.new(0, 0, 0, 0)  
+        ToggleDescription.Size = UDim2.new(0, 140, 1, 0)  
+        ToggleDescription.Font = Enum.Font.Gotham
+        ToggleDescription.Text = text or "Toggle"  
+        ToggleDescription.TextColor3 = themeColors.text
+        ToggleDescription.TextSize = 14
+        ToggleDescription.TextXAlignment = Enum.TextXAlignment.Left  
+        ToggleDescription.ZIndex = 2 + zindex  
+
+        local ToggleButton = Instance.new("TextButton")  
+        local ToggleFiller = Instance.new("Frame")  
+
+        ToggleButton.Name = "ToggleButton"  
+        ToggleButton.Parent = ToggleContainer
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 86, 99)
+        ToggleButton.BorderSizePixel = 0
+        ToggleButton.Position = UDim2.new(1, -40, 0, 5)  
+        ToggleButton.Size = UDim2.new(0, 40, 0, 20)  
+        ToggleButton.Font = Enum.Font.SourceSans  
+        ToggleButton.Text = ""  
+        ToggleButton.ZIndex = 2 + zindex  
+        
+        local toggleCorner = Instance.new("UICorner")
+        toggleCorner.CornerRadius = UDim.new(1, 0)
+        toggleCorner.Parent = ToggleButton
+
+        ToggleFiller.Name = "ToggleFiller"  
+        ToggleFiller.Parent = ToggleButton  
+        ToggleFiller.BackgroundColor3 = themeColors.accent
+        ToggleFiller.BorderSizePixel = 0
+        ToggleFiller.Position = UDim2.new(0, 2, 0, 2)  
+        ToggleFiller.Size = UDim2.new(0, 16, 0, 16)  
+        ToggleFiller.ZIndex = 3 + zindex  
+        
+        local fillerCorner = Instance.new("UICorner")
+        fillerCorner.CornerRadius = UDim.new(1, 0)
+        fillerCorner.Parent = ToggleFiller
+        
+        -- تهيئة حالة التبديل
+        if isToggled then
+            Tween(ToggleFiller, {Position = UDim2.new(0, 22, 0, 2)}, 0.2)
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(76, 209, 55, 0.3)
+        else
+            Tween(ToggleFiller, {Position = UDim2.new(0, 2, 0, 2)}, 0.2)
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 86, 99)
+        end
+
+        ToggleButton.MouseButton1Click:Connect(function()  
+            isToggled = not isToggled
+            if isToggled then
+                Tween(ToggleFiller, {Position = UDim2.new(0, 22, 0, 2)}, 0.2)
+                Tween(ToggleButton, {BackgroundColor3 = Color3.fromRGB(76, 209, 55, 0.3)}, 0.2)
+            else
+                Tween(ToggleFiller, {Position = UDim2.new(0, 2, 0, 2)}, 0.2)
+                Tween(ToggleButton, {BackgroundColor3 = Color3.fromRGB(80, 86, 99)}, 0.2)
+            end
+            callback(isToggled)  
+        end)
+
+        pastSliders[winCount] = false  
+    end
+    
+    -- وظيفة مربع النص (سيتم إضافة الوظائف الأخرى لاحقاً)
+    function functions:Box(text, callback)
+        -- سيتم تنفيذ هذه الوظيفة لاحقاً
+    end
+    
+    function functions:Slider(text, min, max, default, callback)
+        -- سيتم تنفيذ هذه الوظيفة لاحقاً
+    end
+    
+    function functions:Dropdown(text, buttons, callback)
+        -- سيتم تنفيذ هذه الوظيفة لاحقاً
+    end
+    
+    function functions:ColorPicker(name, default, callback)
+        -- سيتم تنفيذ هذه الوظيفة لاحقاً
+    end
+
+    return functions
+end
+
+return TurtleUILibrary
