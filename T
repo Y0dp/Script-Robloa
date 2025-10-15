@@ -97,42 +97,29 @@ function library:Main()
     library.UICorner(8, PanelContainer)
     library.UIStroke(PanelContainer, 2, Color3.new(0.1, 0.1, 0.1))
 
-    -- Improved Drag functionality
+    -- Simple Drag functionality - FIXED
     local dragging = false
-    local dragInput
-    local dragStart
-    local startPos
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        PanelContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
+    local dragStart = Vector2.new(0, 0)
+    local startPos = Vector2.new(0, 0)
 
     PanelContainer.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
-            dragStart = input.Position
-            startPos = PanelContainer.Position
-            
-            local connection
-            connection = input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                    connection:Disconnect()
-                end
-            end)
+            dragStart = Vector2.new(input.Position.X, input.Position.Y)
+            startPos = Vector2.new(PanelContainer.Position.X.Offset, PanelContainer.Position.Y.Offset)
         end
     end)
 
-    PanelContainer.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
+    PanelContainer.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
+            PanelContainer.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
         end
     end)
 
@@ -227,7 +214,7 @@ function library:Main()
     ContentPadding.PaddingLeft = UDim.new(0, 8)
     ContentPadding.PaddingRight = UDim.new(0, 8)
     ContentPadding.PaddingTop = UDim.new(0, 8)
-    ContentPadding.PaddingBottom = UDim.new(0, 8)
+    ContentPadding.PaddingBottom = UDim2.new(0, 8)
 
     local folder1 = Instance.new('Folder', ContentScrollContainer)
 
