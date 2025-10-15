@@ -1,4 +1,4 @@
--- slider function by xTheAlex14 // ZypherUI
+-- Modified UI Library with Tabs on Top // ZypherUI
 
 if game.CoreGui:FindFirstChild('PScreen') then game.CoreGui.PScreen:Destroy() end
 
@@ -373,8 +373,7 @@ function library:Main()
                     SliderHigh.BackgroundColor3 = Color3.new(1, 1, 1)
                     SliderHigh.BackgroundTransparency = 1
                     SliderHigh.BorderSizePixel = 0
-                    SliderHigh.Position = UDim2.new(-0.132701427, 0, 0.0180412363, 0)
-                    SliderHigh.Size = UDim2.new(0, 203, 0, 20)
+                    SliderHigh.Size = UDim2.new(0, 325, 0, 20)
                     SliderHigh.Font = Enum.Font.Gotham
                     SliderHigh.Text = name
                     SliderHigh.TextColor3 = Color3.new(1, 1, 1)
@@ -386,13 +385,13 @@ function library:Main()
                     SliderButton.Parent = SliderHigh
                     SliderButton.BackgroundColor3 = Color3.new(0.0352941, 0.0352941, 0.0352941)
                     SliderButton.BorderSizePixel = 0
-                    SliderButton.Size = UDim2.new(0, 102, 0, 8)
+                    SliderButton.Size = UDim2.new(0, 325, 0, 8)
                     SliderButton.AutoButtonColor = false
                     SliderButton.Font = Enum.Font.SourceSans
                     SliderButton.Text = ""
                     SliderButton.TextColor3 = Color3.new(0, 0, 0)
                     SliderButton.TextSize = 14
-                    SliderButton.Position =  UDim2.new(0.49702251, 0, 0.349999994, 0)
+                    SliderButton.Position =  UDim2.new(0, 0, 0.6, 0)
                     library.UICorner(4, SliderButton)
 
                     local SliderFrame = Instance.new("Frame")
@@ -446,6 +445,7 @@ function library:Main()
 							end
 						end)
 					end)
+
                 elseif type:lower() == 'toggle' then
                     local on = false
 
@@ -455,7 +455,7 @@ function library:Main()
                     Toggle.BackgroundColor3 = Color3.new(1, 1, 1)
                     Toggle.BackgroundTransparency = 1
                     Toggle.BorderSizePixel = 0
-                    Toggle.Size = UDim2.new(0, 203, 0, 20)
+                    Toggle.Size = UDim2.new(0, 325, 0, 20)
                     Toggle.Font = Enum.Font.Gotham
                     Toggle.Text = name
                     Toggle.TextColor3 = Color3.new(1, 1, 1)
@@ -467,7 +467,7 @@ function library:Main()
                     ToggleFrame.Parent = Toggle
                     ToggleFrame.BackgroundColor3 = Color3.new(0.847059, 0, 0)
                     ToggleFrame.BorderSizePixel = 0
-                    ToggleFrame.Position = UDim2.new(0.802955687, 0, 0, 0)
+                    ToggleFrame.Position = UDim2.new(0.85, 0, 0, 0)
                     ToggleFrame.Size = UDim2.new(0, 40, 0, 20)
                     library.UICorner(25, ToggleFrame)
 
@@ -476,8 +476,6 @@ function library:Main()
                     ToggleButton.Parent = ToggleFrame
                     ToggleButton.BackgroundColor3 = Color3.new(1, 1, 1)
                     ToggleButton.BorderSizePixel = 0
-                    -- ON
-                    -- ToggleButton.Position = UDim2.new(0, 21, 0.100000001, 0)
                     ToggleButton.Position = UDim2.new(0, 2, 0.100000001, 0)
                     ToggleButton.Size = UDim2.new(0, 16, 0, 16)
                     ToggleButton.AutoButtonColor = false
@@ -519,8 +517,7 @@ function library:Main()
                     DropdownOn.Parent = Content
                     DropdownOn.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
                     DropdownOn.BorderSizePixel = 0
-                    DropdownOn.Position = UDim2.new(0.0189573467, 0, 0.314432979, 0)
-                    DropdownOn.Size = UDim2.new(0, 203, 0, 20)
+                    DropdownOn.Size = UDim2.new(0, 325, 0, 20)
                     DropdownOn.Font = Enum.Font.Gotham
                     DropdownOn.Text = ""
                     DropdownOn.TextColor3 = Color3.new(1, 1, 1)
@@ -534,7 +531,7 @@ function library:Main()
                     Text.BackgroundColor3 = Color3.new(1, 1, 1)
                     Text.BackgroundTransparency = 1
                     Text.BorderSizePixel = 0
-                    Text.Size = UDim2.new(0, 203, 0, 20)
+                    Text.Size = UDim2.new(0, 325, 0, 20)
                     Text.Font = Enum.Font.Gotham
                     Text.Text = name
                     Text.TextColor3 = Color3.new(1, 1, 1)
@@ -547,7 +544,7 @@ function library:Main()
                     Arrow.BackgroundColor3 = Color3.new(1, 1, 1)
                     Arrow.BackgroundTransparency = 1
                     Arrow.BorderSizePixel = 0
-                    Arrow.Position = UDim2.new(0.886699557, 0, 0, 0)
+                    Arrow.Position = UDim2.new(0.92, 0, 0, 0)
                     Arrow.Size = UDim2.new(0, 20, 0, 20)
                     Arrow.Font = Enum.Font.Gotham
                     Arrow.Text = "+"
@@ -560,8 +557,8 @@ function library:Main()
                     ScrollContainer.BackgroundColor3 = Color3.new(0.117647, 0.117647, 0.117647)
                     ScrollContainer.BorderSizePixel = 0
                     ScrollContainer.BackgroundTransparency = 1
-                    ScrollContainer.Position = UDim2.new(0.0197044332, 0, 0.194174752, 0)
-                    ScrollContainer.Size = UDim2.new(0, 195, 0, 80)
+                    ScrollContainer.Position = UDim2.new(0, 0, 1, 2)
+                    ScrollContainer.Size = UDim2.new(0, 325, 0, 80)
                     ScrollContainer.Visible = false
                     library.UICorner(4, ScrollContainer)
 
@@ -572,9 +569,9 @@ function library:Main()
                     Contents.BackgroundColor3 = Color3.new(1, 1, 1)
                     Contents.BackgroundTransparency = 1
                     Contents.BorderSizePixel = 0
-                    Contents.Size = UDim2.new(0, 195, 0, 80)
+                    Contents.Size = UDim2.new(0, 325, 0, 80)
                     Contents.CanvasSize = UDim2.new(0, 0, 0, 0)
-                    Contents.ScrollBarThickness = 0
+                    Contents.ScrollBarThickness = 3
                     Contents.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
                     local UIListLayout = Instance.new("UIListLayout")
@@ -589,7 +586,7 @@ function library:Main()
                             ContentItem.BackgroundColor3 = Color3.new(1, 1, 1)
                             ContentItem.BackgroundTransparency = 1
                             ContentItem.BorderSizePixel = 0
-                            ContentItem.Size = UDim2.new(0, 195, 0, 17)
+                            ContentItem.Size = UDim2.new(0, 325, 0, 17)
                             ContentItem.Font = Enum.Font.Gotham
                             ContentItem.Text = v
                             ContentItem.TextColor3 = Color3.new(1, 1, 1)
@@ -601,8 +598,7 @@ function library:Main()
                             ContentItem.MouseButton1Down:Connect(function()
                                 Text.Text = v
                                 Arrow.Text = "+"
-                                tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 203, 0, 20)}):Play()
-                                tween:Create(Content, TweenInfo.new(0.2), {CanvasSize = Content.CanvasSize - UDim2.new(0, 0, 0, 107)}):Play()
+                                tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 325, 0, 20)}):Play()
                                 tween:Create(ScrollContainer, TweenInfo.new(0.1), {BackgroundTransparency = 1}):Play()
                                 for i,v in pairs(Contents:GetChildren()) do
                                     if v:IsA('TextButton') then
@@ -623,8 +619,7 @@ function library:Main()
                         if not open then
                             Arrow.Text = "-"
                             open = not open
-                            tween:Create(Content, TweenInfo.new(0.2), {CanvasSize = Content.CanvasSize + UDim2.new(0, 0, 0, 107)}):Play()
-                            tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 203, 0, 103)}):Play()
+                            tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 325, 0, 103)}):Play()
                             wait(0.1)
                             ScrollContainer.Visible = true
                             tween:Create(ScrollContainer, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
@@ -635,8 +630,7 @@ function library:Main()
                             end
                         else
                             Arrow.Text = "+"
-                            tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 203, 0, 20)}):Play()
-                            tween:Create(Content, TweenInfo.new(0.2), {CanvasSize = Content.CanvasSize - UDim2.new(0, 0, 0, 107)}):Play()
+                            tween:Create(DropdownOn, TweenInfo.new(0.2), {Size = UDim2.new(0, 325, 0, 20)}):Play()
                             tween:Create(ScrollContainer, TweenInfo.new(0.1), {BackgroundTransparency = 1}):Play()
                             for i,v in pairs(Contents:GetChildren()) do
                                 if v:IsA('TextButton') then
