@@ -97,29 +97,42 @@ function library:Main()
     library.UICorner(8, PanelContainer)
     library.UIStroke(PanelContainer, 2, Color3.new(0.1, 0.1, 0.1))
 
-    -- Simple Drag functionality - FIXED
+    -- Improved Drag functionality
     local dragging = false
-    local dragStart = Vector2.new(0, 0)
-    local startPos = Vector2.new(0, 0)
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        PanelContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 
     PanelContainer.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
-            dragStart = Vector2.new(input.Position.X, input.Position.Y)
-            startPos = Vector2.new(PanelContainer.Position.X.Offset, PanelContainer.Position.Y.Offset)
+            dragStart = input.Position
+            startPos = PanelContainer.Position
+            
+            local connection
+            connection = input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    connection:Disconnect()
+                end
+            end)
         end
     end)
 
-    PanelContainer.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
+    PanelContainer.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
-            PanelContainer.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
+        if input == dragInput and dragging then
+            update(input)
         end
     end)
 
@@ -214,7 +227,7 @@ function library:Main()
     ContentPadding.PaddingLeft = UDim.new(0, 8)
     ContentPadding.PaddingRight = UDim.new(0, 8)
     ContentPadding.PaddingTop = UDim.new(0, 8)
-    ContentPadding.PaddingBottom = UDim2.new(0, 8)
+    ContentPadding.PaddingBottom = UDim.new(0, 8)
 
     local folder1 = Instance.new('Folder', ContentScrollContainer)
 
@@ -572,74 +585,66 @@ function library:Main()
                     end)
 
                 elseif type:lower() == 'toggle' then
-                    local on = options.Default or false
+    local ToggleContainer = Instance.new("Frame")
+    ToggleContainer.Name = "ToggleContainer"
+    ToggleContainer.Parent = SectionContainer
+    ToggleContainer.BackgroundColor3 = Color3.new(1, 1, 1)
+    ToggleContainer.BackgroundTransparency = 1
+    ToggleContainer.BorderSizePixel = 0
+    ToggleContainer.Size = UDim2.new(1, 0, 0, 35)
 
-                    local ToggleContainer = Instance.new("Frame")
-                    ToggleContainer.Name = "ToggleContainer"
-                    ToggleContainer.Parent = SectionContainer
-                    ToggleContainer.BackgroundColor3 = Color3.new(1, 1, 1)
-                    ToggleContainer.BackgroundTransparency = 1
-                    ToggleContainer.BorderSizePixel = 0
-                    ToggleContainer.Size = UDim2.new(1, 0, 0, 30)
-                    
-                    local ToggleLabel = Instance.new("TextLabel")
-                    ToggleLabel.Name = "ToggleLabel"
-                    ToggleLabel.Parent = ToggleContainer
-                    ToggleLabel.BackgroundColor3 = Color3.new(1, 1, 1)
-                    ToggleLabel.BackgroundTransparency = 1
-                    ToggleLabel.BorderSizePixel = 0
-                    ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
-                    ToggleLabel.Font = Enum.Font.Gotham
-                    ToggleLabel.Text = name
-                    ToggleLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-                    ToggleLabel.TextSize = 13
-                    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Name = "ToggleLabel"
+    ToggleLabel.Parent = ToggleContainer
+    ToggleLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.BorderSizePixel = 0
+    ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+    ToggleLabel.Font = Enum.Font.Gotham
+    ToggleLabel.Text = name
+    ToggleLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    ToggleLabel.TextSize = 13
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-                    -- Enhanced Toggle Design
-                    local ToggleOuter = Instance.new("Frame")
-                    ToggleOuter.Name = "ToggleOuter"
-                    ToggleOuter.Parent = ToggleContainer
-                    ToggleOuter.BackgroundColor3 = on and Color3.new(0.2, 0.6, 1) or Color3.new(0.3, 0.3, 0.3)
-                    ToggleOuter.BorderSizePixel = 0
-                    ToggleOuter.Position = UDim2.new(0.8, 0, 0.25, 0)
-                    ToggleOuter.Size = UDim2.new(0.18, 0, 0.5, 0)
-                    library.UICorner(10, ToggleOuter)
-                    library.UIStroke(ToggleOuter, 1, Color3.new(0.2, 0.2, 0.2))
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Parent = ToggleContainer
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Position = UDim2.new(0.8, 0, 0.15, 0)
+    ToggleButton.Size = UDim2.new(0, 25, 0, 25)
+    ToggleButton.AutoButtonColor = false
+    ToggleButton.Text = ""
+    library.UICorner(20, ToggleButton)
+    library.UIStroke(ToggleButton, 1, Color3.fromRGB(80, 80, 80))
 
-                    local ToggleInner = Instance.new("Frame")
-                    ToggleInner.Name = "ToggleInner"
-                    ToggleInner.Parent = ToggleOuter
-                    ToggleInner.BackgroundColor3 = Color3.new(1, 1, 1)
-                    ToggleInner.BorderSizePixel = 0
-                    ToggleInner.Size = UDim2.new(0.5, 0, 0.8, 0)
-                    ToggleInner.Position = on and UDim2.new(0.45, 0, 0.1, 0) or UDim2.new(0.05, 0, 0.1, 0)
-                    library.UICorner(10, ToggleInner)
-                    library.UIStroke(ToggleInner, 1, Color3.new(0.5, 0.5, 0.5))
+    local Circle = Instance.new("Frame")
+    Circle.Name = "Circle"
+    Circle.Parent = ToggleButton
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Circle.BorderSizePixel = 0
+    Circle.Size = UDim2.new(0.6, 0, 0.6, 0)
+    Circle.Position = UDim2.new(0.2, 0, 0.2, 0)
+    library.UICorner(20, Circle)
 
-                    local ToggleButton = Instance.new("TextButton")
-                    ToggleButton.Name = "ToggleButton"
-                    ToggleButton.Parent = ToggleContainer
-                    ToggleButton.BackgroundColor3 = Color3.new(1, 1, 1)
-                    ToggleButton.BackgroundTransparency = 1
-                    ToggleButton.BorderSizePixel = 0
-                    ToggleButton.Size = UDim2.new(0.2, 0, 1, 0)
-                    ToggleButton.Position = UDim2.new(0.8, 0, 0, 0)
-                    ToggleButton.Text = ""
-                    ToggleButton.AutoButtonColor = false
+    local toggled = false
 
-                    ToggleButton.MouseButton1Down:Connect(function()
-                        on = not on
-                        if on then
-                            tween:Create(ToggleOuter, TweenInfo.new(0.2), {BackgroundColor3 = Color3.new(0.2, 0.6, 1)}):Play()
-                            tween:Create(ToggleInner, TweenInfo.new(0.2), {Position = UDim2.new(0.45, 0, 0.1, 0)}):Play()
-                        else
-                            tween:Create(ToggleOuter, TweenInfo.new(0.2), {BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)}):Play()
-                            tween:Create(ToggleInner, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
-                        end
-                        if callback then
-                            callback(on)
-                        end
-                    end)
+    ToggleButton.MouseButton1Click:Connect(function()
+        toggled = not toggled
+        if toggled then
+            tween:Create(ToggleButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            }):Play()
+        else
+            tween:Create(ToggleButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            }):Play()
+        end
+        if callback then
+            callback(toggled)
+        end
+    end)
+end
 
                     -- Hover effect for toggle
                     ToggleButton.MouseEnter:Connect(function()
