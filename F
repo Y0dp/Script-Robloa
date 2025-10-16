@@ -357,7 +357,7 @@ function MakeWindow(Configs)
     KeyMenu:Destroy()
   end
   
-  local MyFrame = Create("Frame", ScreenGui, {
+  local Menu = Create("Frame", ScreenGui, {
     Size = UDim2.new(0, 300, 0, 150),
     BackgroundColor3 = Configs_HUB.Cor_Hub,
     Position = UDim2.new(0.5, -150, 0.5, -75)
