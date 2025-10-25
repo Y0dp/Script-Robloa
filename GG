@@ -1,0 +1,561 @@
+local Library = {}
+local Tabs = {}
+
+-- إعدادات الألوان الجديدة
+local Configs_HUB = {
+    Cor_Primary = Color3.fromRGB(35, 35, 35),
+    Cor_Secondary = Color3.fromRGB(50, 50, 50),
+    Cor_Text = Color3.fromRGB(245, 245, 245),
+    Cor_Stroke = Color3.fromRGB(120, 120, 120),
+    Cor_Accent = Color3.fromRGB(0, 162, 255),
+    Cor_Options = Color3.fromRGB(60, 60, 60),
+    Cor_Success = Color3.fromRGB(0, 200, 100),
+    Text_Font = Enum.Font.GothamBold
+}
+
+-- دوال مساعدة
+local function Create(Class, Parent, Props)
+    local Obj = Instance.new(Class)
+    for i,v in pairs(Props or {}) do Obj[i] = v end
+    Obj.Parent = Parent
+    return Obj
+end
+
+local function Corner(obj, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius or 6)
+    c.Parent = obj
+    return c
+end
+
+local function Stroke(obj, color, thickness)
+    local s = Instance.new("UIStroke")
+    s.Color = color or Configs_HUB.Cor_Stroke
+    s.Thickness = thickness or 1
+    s.Parent = obj
+    return s
+end
+
+local TweenService = game:GetService("TweenService")
+local function CreateTween(Object, Properties, Time)
+    TweenService:Create(Object, TweenInfo.new(Time or 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), Properties):Play()
+end
+
+-- السحب
+local Players = game:GetService("Players")
+local Mouse = Players.LocalPlayer:GetMouse()
+local RunService = game:GetService("RunService")
+local function Dragify(Object)
+    local Dragging, DragInput, DragStart, StartPos
+    local function Update(input)
+        local Delta = input.Position - DragStart
+        Object.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+    end
+
+    Object.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Dragging = true
+            DragStart = input.Position
+            StartPos = Object.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then Dragging = false end
+            end)
+        end
+    end)
+    Object.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then DragInput = input end
+    end)
+    RunService.Heartbeat:Connect(function()
+        if Dragging and DragInput then Update(DragInput) end
+    end)
+end
+
+-- حماية الواجهة
+local function ProtectGui(obj)
+    if syn and syn.protect_gui then syn.protect_gui(obj) end
+    obj.Parent = game:GetService("CoreGui")
+end
+
+local TurtleUiLib = Create("ScreenGui", nil, {Name = "LightUiLib", ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
+ProtectGui(TurtleUiLib)
+
+-- إنشاء النوافذ
+local xOffset = 15
+local windowCount = 0
+local sizes = {}
+local UIS = game:GetService("UserInputService")
+local keybindConnection
+
+function Library:Destroy()
+    TurtleUiLib:Destroy()
+    if keybindConnection then keybindConnection:Disconnect() end
+end
+
+function Library:Hide()
+    TurtleUiLib.Enabled = not TurtleUiLib.Enabled
+end
+
+function Library:Keybind(key)
+    if keybindConnection then keybindConnection:Disconnect() end
+    keybindConnection = UIS.InputBegan:Connect(function(input, gp)
+        if not gp and input.KeyCode == Enum.KeyCode[key] then
+            Library:Hide()
+        end
+    end)
+end
+
+function Library:Window(name)
+    windowCount = windowCount + 1
+    local winCount = windowCount
+
+    local MainWindow = Create("Frame", TurtleUiLib, {
+        Size = UDim2.new(0, 200, 0, 28),
+        Position = UDim2.new(0, xOffset, 0, 20),
+        BackgroundColor3 = Configs_HUB.Cor_Primary,
+        Active = true,
+        ClipsDescendants = true
+    })
+    Corner(MainWindow, 8)
+    Stroke(MainWindow, Configs_HUB.Cor_Stroke, 1.2)
+    Dragify(MainWindow)
+    xOffset = xOffset + 220
+
+    local Header = Create("Frame", MainWindow, {
+        Size = UDim2.new(1, 0, 0, 24),
+        BackgroundColor3 = Configs_HUB.Cor_Secondary,
+        BorderSizePixel = 0
+    })
+    Corner(Header, 8)
+
+    local Title = Create("TextLabel", Header, {
+        Size = UDim2.new(1, -30, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        BackgroundTransparency = 1,
+        Text = name or "Window",
+        TextColor3 = Configs_HUB.Cor_Text,
+        TextSize = 13,
+        Font = Configs_HUB.Text_Font,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local ToggleBtn = Create("TextButton", Header, {
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(1, -28, 0.5, -10),
+        BackgroundColor3 = Configs_HUB.Cor_Options,
+        Text = "-",
+        TextColor3 = Configs_HUB.Cor_Text,
+        TextSize = 14,
+        Font = Configs_HUB.Text_Font,
+        AutoButtonColor = false
+    })
+    Corner(ToggleBtn, 6)
+
+    local Content = Create("ScrollingFrame", MainWindow, {
+        Size = UDim2.new(1,0,1,-28),
+        Position = UDim2.new(0,0,0,28),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 3,
+        CanvasSize = UDim2.new(0,0,0,0),
+        BorderSizePixel = 0
+    })
+    local ContentLayout = Create("UIListLayout", Content, {Padding = UDim.new(0,4), SortOrder = Enum.SortOrder.LayoutOrder})
+    ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Content.CanvasSize = UDim2.new(0,0,0,ContentLayout.AbsoluteContentSize.Y + 6)
+    end)
+
+    local isMinimized = false
+    ToggleBtn.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+        if isMinimized then
+            CreateTween(Content,{Size=UDim2.new(1,0,0,0)})
+            CreateTween(MainWindow,{Size=UDim2.new(0,200,0,28)})
+            ToggleBtn.Text = "+"
+        else
+            CreateTween(Content,{Size=UDim2.new(1,0,1,-28)})
+            CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)})
+            ToggleBtn.Text = "-"
+        end
+    end)
+
+    sizes[winCount] = 0
+
+    local windowFunctions = {}
+
+    -- زر Button
+    function windowFunctions:Button(config)
+        local Btn = Create("TextButton", Content,{
+            Size=UDim2.new(1,-6,0,24),
+            BackgroundColor3=Configs_HUB.Cor_Options,
+            Text=config.Name or "Button",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=12,
+            Font=Configs_HUB.Text_Font,
+            AutoButtonColor=false,
+            LayoutOrder=#Content:GetChildren()
+        })
+        Corner(Btn,6)
+        Stroke(Btn,Configs_HUB.Cor_Stroke,1)
+        
+        Btn.MouseEnter:Connect(function()
+            CreateTween(Btn, {BackgroundColor3 = Configs_HUB.Cor_Secondary})
+        end)
+        Btn.MouseLeave:Connect(function()
+            CreateTween(Btn, {BackgroundColor3 = Configs_HUB.Cor_Options})
+        end)
+        Btn.MouseButton1Click:Connect(function()
+            pcall(config.Callback)
+        end)
+        
+        sizes[winCount]=sizes[winCount]+28
+        if not isMinimized then CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)}) end
+    end
+
+    -- زر Toggle محسّن
+    function windowFunctions:Toggle(config)
+        local ToggleFrame = Create("Frame", Content,{
+            Size=UDim2.new(1,-6,0,24),
+            BackgroundTransparency=1,
+            LayoutOrder=#Content:GetChildren()
+        })
+
+        local ToggleBtn = Create("TextButton", ToggleFrame,{
+            Size=UDim2.new(1,0,1,0),
+            BackgroundColor3=Configs_HUB.Cor_Options,
+            Text="",
+            AutoButtonColor=false
+        })
+        Corner(ToggleBtn,6)
+        Stroke(ToggleBtn,Configs_HUB.Cor_Stroke,1)
+
+        local Label = Create("TextLabel", ToggleBtn,{
+            Text=config.Name or "Toggle",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=12,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(1,-36,1,0),
+            Position=UDim2.new(0,8,0,0),
+            TextXAlignment=Enum.TextXAlignment.Left
+        })
+
+        local ToggleIndicator = Create("Frame", ToggleBtn,{
+            Size=UDim2.new(0,20,0,20),
+            Position=UDim2.new(1,-26,0.5,-10),
+            BackgroundColor3=Configs_HUB.Cor_Stroke,
+            AnchorPoint=Vector2.new(0,0.5)
+        })
+        Corner(ToggleIndicator,4)
+        Stroke(ToggleIndicator,Configs_HUB.Cor_Stroke,1)
+
+        local ToggleState = config.Default or false
+        
+        local function UpdateToggle()
+            if ToggleState then
+                CreateTween(ToggleIndicator, {BackgroundColor3 = Configs_HUB.Cor_Success})
+                CreateTween(ToggleIndicator, {Size = UDim2.new(0,10,0,10)})
+                CreateTween(ToggleIndicator, {Position = UDim2.new(1,-18,0.5,-5)})
+            else
+                CreateTween(ToggleIndicator, {BackgroundColor3 = Configs_HUB.Cor_Stroke})
+                CreateTween(ToggleIndicator, {Size = UDim2.new(0,20,0,20)})
+                CreateTween(ToggleIndicator, {Position = UDim2.new(1,-26,0.5,-10)})
+            end
+        end
+        
+        UpdateToggle()
+        
+        ToggleBtn.MouseButton1Click:Connect(function()
+            ToggleState = not ToggleState
+            UpdateToggle()
+            pcall(config.Callback, ToggleState)
+        end)
+        
+        ToggleBtn.MouseEnter:Connect(function()
+            CreateTween(ToggleBtn, {BackgroundColor3 = Configs_HUB.Cor_Secondary})
+        end)
+        ToggleBtn.MouseLeave:Connect(function()
+            CreateTween(ToggleBtn, {BackgroundColor3 = Configs_HUB.Cor_Options})
+        end)
+        
+        sizes[winCount]=sizes[winCount]+28
+        if not isMinimized then CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)}) end
+        
+        return {
+            Set = function(self, state)
+                ToggleState = state
+                UpdateToggle()
+            end,
+            Get = function(self)
+                return ToggleState
+            end
+        }
+    end
+
+    -- إضافة Slider
+    function windowFunctions:Slider(config)
+        local SliderFrame = Create("Frame", Content,{
+            Size=UDim2.new(1,-6,0,40),
+            BackgroundTransparency=1,
+            LayoutOrder=#Content:GetChildren()
+        })
+
+        local Label = Create("TextLabel", SliderFrame,{
+            Text=config.Name or "Slider",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=12,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(1,0,0,16),
+            Position=UDim2.new(0,0,0,0),
+            TextXAlignment=Enum.TextXAlignment.Left
+        })
+
+        local ValueLabel = Create("TextLabel", SliderFrame,{
+            Text=tostring(config.Default or config.Min or 0),
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=11,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(0,40,0,16),
+            Position=UDim2.new(1,-40,0,0),
+            TextXAlignment=Enum.TextXAlignment.Right
+        })
+
+        local SliderTrack = Create("Frame", SliderFrame,{
+            Size=UDim2.new(1,0,0,12),
+            Position=UDim2.new(0,0,1,-16),
+            BackgroundColor3=Configs_HUB.Cor_Options
+        })
+        Corner(SliderTrack,4)
+        Stroke(SliderTrack,Configs_HUB.Cor_Stroke,1)
+
+        local SliderFill = Create("Frame", SliderTrack,{
+            Size=UDim2.new(0,0,1,0),
+            BackgroundColor3=Configs_HUB.Cor_Accent
+        })
+        Corner(SliderFill,4)
+
+        local SliderButton = Create("TextButton", SliderTrack,{
+            Size=UDim2.new(0,16,0,16),
+            Position=UDim2.new(0,0,0.5,-8),
+            BackgroundColor3=Configs_HUB.Cor_Text,
+            Text="",
+            AutoButtonColor=false,
+            ZIndex=2
+        })
+        Corner(SliderButton,8)
+        Stroke(SliderButton,Configs_HUB.Cor_Stroke,1)
+
+        local min = config.Min or 0
+        local max = config.Max or 100
+        local default = config.Default or min
+        local currentValue = default
+        
+        local function UpdateSlider(value)
+            local percentage = (value - min) / (max - min)
+            SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+            SliderButton.Position = UDim2.new(percentage, -8, 0.5, -8)
+            ValueLabel.Text = tostring(math.floor(value))
+            currentValue = value
+            pcall(config.Callback, value)
+        end
+        
+        local isSliding = false
+        SliderButton.MouseButton1Down:Connect(function()
+            isSliding = true
+        end)
+        
+        local connection
+        connection = UIS.InputChanged:Connect(function(input)
+            if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+                local relativeX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
+                local value = min + (max - min) * relativeX
+                if config.Precise then
+                    value = math.floor(value)
+                else
+                    value = math.floor(value)
+                end
+                UpdateSlider(value)
+            end
+        end)
+        
+        UIS.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isSliding = false
+            end
+        end)
+        
+        UpdateSlider(default)
+        
+        sizes[winCount]=sizes[winCount]+44
+        if not isMinimized then CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)}) end
+        
+        return {
+            Set = function(self, value)
+                UpdateSlider(math.clamp(value, min, max))
+            end,
+            Get = function(self)
+                return currentValue
+            end
+        }
+    end
+
+    -- إضافة Dropdown
+    function windowFunctions:Dropdown(config)
+        local DropdownFrame = Create("Frame", Content,{
+            Size=UDim2.new(1,-6,0,24),
+            BackgroundTransparency=1,
+            LayoutOrder=#Content:GetChildren()
+        })
+
+        local DropdownBtn = Create("TextButton", DropdownFrame,{
+            Size=UDim2.new(1,0,0,24),
+            BackgroundColor3=Configs_HUB.Cor_Options,
+            Text="",
+            AutoButtonColor=false
+        })
+        Corner(DropdownBtn,6)
+        Stroke(DropdownBtn,Configs_HUB.Cor_Stroke,1)
+
+        local Label = Create("TextLabel", DropdownBtn,{
+            Text=config.Name or "Dropdown",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=12,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(1,-30,1,0),
+            Position=UDim2.new(0,8,0,0),
+            TextXAlignment=Enum.TextXAlignment.Left
+        })
+
+        local Arrow = Create("TextLabel", DropdownBtn,{
+            Text="▼",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=10,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(0,20,1,0),
+            Position=UDim2.new(1,-20,0,0),
+            TextXAlignment=Enum.TextXAlignment.Center
+        })
+
+        local OptionsFrame = Create("ScrollingFrame", DropdownFrame,{
+            Size=UDim2.new(1,0,0,0),
+            Position=UDim2.new(0,0,1,2),
+            BackgroundColor3=Configs_HUB.Cor_Options,
+            ScrollBarThickness=3,
+            CanvasSize=UDim2.new(0,0,0,0),
+            Visible=false,
+            ClipsDescendants=true
+        })
+        Corner(OptionsFrame,6)
+        Stroke(OptionsFrame,Configs_HUB.Cor_Stroke,1)
+
+        local OptionsLayout = Create("UIListLayout", OptionsFrame, {
+            Padding = UDim.new(0,2),
+            SortOrder = Enum.SortOrder.LayoutOrder
+        })
+
+        local isOpen = false
+        local selectedOption = config.Default or nil
+        
+        local function UpdateDropdown()
+            if selectedOption then
+                Label.Text = config.Name .. ": " .. selectedOption
+            else
+                Label.Text = config.Name or "Dropdown"
+            end
+        end
+        
+        local function ToggleDropdown()
+            isOpen = not isOpen
+            if isOpen then
+                OptionsFrame.Visible = true
+                CreateTween(OptionsFrame, {Size = UDim2.new(1,0,0,math.min(#config.Options * 26, 100))})
+                CreateTween(Arrow, {Rotation = 180})
+            else
+                CreateTween(OptionsFrame, {Size = UDim2.new(1,0,0,0)})
+                CreateTween(Arrow, {Rotation = 0})
+                wait(0.2)
+                OptionsFrame.Visible = false
+            end
+        end
+        
+        DropdownBtn.MouseButton1Click:Connect(ToggleDropdown)
+        
+        -- إنشاء الخيارات
+        for i, option in pairs(config.Options or {}) do
+            local OptionBtn = Create("TextButton", OptionsFrame,{
+                Size=UDim2.new(1,-4,0,22),
+                BackgroundColor3=Configs_HUB.Cor_Primary,
+                Text=option,
+                TextColor3=Configs_HUB.Cor_Text,
+                TextSize=11,
+                Font=Configs_HUB.Text_Font,
+                AutoButtonColor=false,
+                LayoutOrder=i
+            })
+            Corner(OptionBtn,4)
+            
+            OptionBtn.MouseButton1Click:Connect(function()
+                selectedOption = option
+                UpdateDropdown()
+                ToggleDropdown()
+                pcall(config.Callback, option)
+            end)
+            
+            OptionBtn.MouseEnter:Connect(function()
+                CreateTween(OptionBtn, {BackgroundColor3 = Configs_HUB.Cor_Secondary})
+            end)
+            OptionBtn.MouseLeave:Connect(function()
+                CreateTween(OptionBtn, {BackgroundColor3 = Configs_HUB.Cor_Primary})
+            end)
+        end
+        
+        OptionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            OptionsFrame.CanvasSize = UDim2.new(0,0,0,OptionsLayout.AbsoluteContentSize.Y)
+        end)
+        
+        UpdateDropdown()
+        
+        sizes[winCount]=sizes[winCount]+28
+        if not isMinimized then CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)}) end
+        
+        return {
+            Set = function(self, option)
+                if table.find(config.Options, option) then
+                    selectedOption = option
+                    UpdateDropdown()
+                end
+            end,
+            Get = function(self)
+                return selectedOption
+            end
+        }
+    end
+
+    -- إضافة Label
+    function windowFunctions:Label(text)
+        local LabelFrame = Create("Frame", Content,{
+            Size=UDim2.new(1,-6,0,20),
+            BackgroundTransparency=1,
+            LayoutOrder=#Content:GetChildren()
+        })
+
+        local Label = Create("TextLabel", LabelFrame,{
+            Text=text or "Label",
+            TextColor3=Configs_HUB.Cor_Text,
+            TextSize=12,
+            Font=Configs_HUB.Text_Font,
+            BackgroundTransparency=1,
+            Size=UDim2.new(1,0,1,0),
+            TextXAlignment=Enum.TextXAlignment.Left
+        })
+
+        sizes[winCount]=sizes[winCount]+24
+        if not isMinimized then CreateTween(MainWindow,{Size=UDim2.new(0,200,0,sizes[winCount]+28)}) end
+    end
+
+    return windowFunctions
+end
+
+return Library
