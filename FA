@@ -1,0 +1,960 @@
+local NeoUILib = {}
+
+-- إعدادات التخصيص
+local NeoConfig = {
+    Primary = Color3.fromRGB(25, 25, 35),
+    Secondary = Color3.fromRGB(35, 35, 50),
+    Accent = Color3.fromRGB(0, 150, 255),
+    Text = Color3.fromRGB(240, 240, 245),
+    SubText = Color3.fromRGB(180, 180, 190),
+    Success = Color3.fromRGB(0, 200, 100),
+    Warning = Color3.fromRGB(255, 170, 0),
+    Error = Color3.fromRGB(255, 60, 60),
+    Border = Color3.fromRGB(60, 60, 80),
+    CornerRadius = UDim.new(0, 8),
+    Font = Enum.Font.GothamSemibold,
+    ShadowIntensity = 0.3
+}
+
+-- الخدمات
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+-- الدوال المساعدة
+local function Create(instance, props)
+    local obj = Instance.new(instance)
+    for prop, value in pairs(props or {}) do
+        obj[prop] = value
+    end
+    return obj
+end
+
+local function ApplyShadow(parent)
+    local shadow = Create("ImageLabel", {
+        Name = "Shadow",
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = Color3.new(0, 0, 0),
+        ImageTransparency = NeoConfig.ShadowIntensity,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        Size = UDim2.new(1, 24, 1, 24),
+        Position = UDim2.new(0, -12, 0, -12),
+        BackgroundTransparency = 1,
+        ZIndex = 0
+    })
+    shadow.Parent = parent
+    return shadow
+end
+
+local function SmoothTween(instance, props, duration, easing)
+    local tweenInfo = TweenInfo.new(duration or 0.3, easing or Enum.EasingStyle.Quad)
+    local tween = TweenService:Create(instance, tweenInfo, props)
+    tween:Play()
+    return tween
+end
+
+-- الفئة الرئيسية
+NeoUILib.__index = NeoUILib
+
+function NeoUILib:CreateWindow(config)
+    config = config or {}
+    
+    local self = setmetatable({}, NeoUILib)
+    
+    -- إنشاء الواجهة الرئيسية
+    self.Gui = Create("ScreenGui", {
+        Name = "NeoUI_" .. math.random(1000, 9999),
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+    
+    self.MainFrame = Create("Frame", {
+        Name = "MainFrame",
+        Size = UDim2.new(0, 500, 0, 400),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = NeoConfig.Primary,
+        ClipsDescendants = true
+    })
+    
+    -- إضافة الظل
+    ApplyShadow(self.MainFrame)
+    
+    -- الزوايا المستديرة
+    Create("UICorner", {
+        CornerRadius = NeoConfig.CornerRadius,
+        Parent = self.MainFrame
+    })
+    
+    -- الحدود
+    Create("UIStroke", {
+        Color = NeoConfig.Border,
+        Thickness = 1,
+        Parent = self.MainFrame
+    })
+    
+    -- شريط العنوان مع تأثير زجاجي
+    self.TitleBar = Create("Frame", {
+        Name = "TitleBar",
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = NeoConfig.Secondary,
+        BackgroundTransparency = 0.1,
+        BorderSizePixel = 0
+    })
+    
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, NeoConfig.CornerRadius.Offset),
+        Parent = self.TitleBar
+    })
+    
+    -- نص العنوان
+    self.TitleLabel = Create("TextLabel", {
+        Name = "Title",
+        Text = config.Title or "Neo UI Library",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 18,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -80, 1, 0),
+        Position = UDim2.new(0, 15, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    -- أزرار التحكم
+    self.ControlButtons = Create("Frame", {
+        Name = "ControlButtons",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 60, 1, 0),
+        Position = UDim2.new(1, -65, 0, 0)
+    })
+    
+    -- زر التصغير
+    self.MinimizeBtn = Create("TextButton", {
+        Name = "Minimize",
+        Text = "_",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = NeoConfig.Secondary,
+        Size = UDim2.new(0, 25, 0, 25),
+        Position = UDim2.new(0, 5, 0.5, -12.5),
+        AnchorPoint = Vector2.new(0, 0.5)
+    })
+    
+    -- زر الإغلاق
+    self.CloseBtn = Create("TextButton", {
+        Name = "Close",
+        Text = "×",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 18,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = NeoConfig.Error,
+        Size = UDim2.new(0, 25, 0, 25),
+        Position = UDim2.new(1, -30, 0.5, -12.5),
+        AnchorPoint = Vector2.new(1, 0.5)
+    })
+    
+    -- منطقة المحتوى
+    self.ContentArea = Create("Frame", {
+        Name = "ContentArea",
+        Size = UDim2.new(1, 0, 1, -45),
+        Position = UDim2.new(0, 0, 0, 40),
+        BackgroundTransparency = 1
+    })
+    
+    -- الشريط الجانبي
+    self.Sidebar = Create("Frame", {
+        Name = "Sidebar",
+        Size = UDim2.new(0, 150, 1, 0),
+        BackgroundColor3 = NeoConfig.Secondary,
+        BackgroundTransparency = 0.05
+    })
+    
+    -- منطقة المحتوى الرئيسية
+    self.MainContent = Create("Frame", {
+        Name = "MainContent",
+        Size = UDim2.new(1, -155, 1, -10),
+        Position = UDim2.new(0, 155, 0, 5),
+        BackgroundTransparency = 1
+    })
+    
+    -- تجميع العناصر
+    self.MinimizeBtn.Parent = self.ControlButtons
+    self.CloseBtn.Parent = self.ControlButtons
+    self.ControlButtons.Parent = self.TitleBar
+    self.TitleLabel.Parent = self.TitleBar
+    self.TitleBar.Parent = self.MainFrame
+    self.Sidebar.Parent = self.ContentArea
+    self.MainContent.Parent = self.ContentArea
+    self.ContentArea.Parent = self.MainFrame
+    self.MainFrame.Parent = self.Gui
+    self.Gui.Parent = CoreGui
+    
+    -- تطبيق الزوايا المستديرة للأزرار
+    for _, btn in pairs({self.MinimizeBtn, self.CloseBtn}) do
+        Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = btn})
+        Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = btn})
+    end
+    
+    -- المتغيرات
+    self.Tabs = {}
+    self.CurrentTab = nil
+    self.IsMinimized = false
+    self.IsDragging = false
+    self.DragStart = nil
+    self.StartPosition = nil
+    
+    -- إعداد الأحداث
+    self:SetupEvents()
+    
+    return self
+end
+
+function NeoUILib:SetupEvents()
+    -- سحب النافذة
+    self.TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            self.IsDragging = true
+            self.DragStart = input.Position
+            self.StartPosition = self.MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    self.IsDragging = false
+                end
+            end)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if self.IsDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - self.DragStart
+            self.MainFrame.Position = UDim2.new(
+                self.StartPosition.X.Scale,
+                self.StartPosition.X.Offset + delta.X,
+                self.StartPosition.Y.Scale,
+                self.StartPosition.Y.Offset + delta.Y
+            )
+        end
+    end)
+    
+    -- زر التصغير
+    self.MinimizeBtn.MouseButton1Click:Connect(function()
+        self:ToggleMinimize()
+    end)
+    
+    -- زر الإغلاق
+    self.CloseBtn.MouseButton1Click:Connect(function()
+        self:Close()
+    end)
+    
+    -- تأثيرات Hover للأزرار
+    local function SetupButtonHover(button, hoverColor)
+        button.MouseEnter:Connect(function()
+            SmoothTween(button, {BackgroundColor3 = hoverColor}, 0.2)
+        end)
+        
+        button.MouseLeave:Connect(function()
+            SmoothTween(button, {BackgroundColor3 = button.Name == "Close" and NeoConfig.Error or NeoConfig.Secondary}, 0.2)
+        end)
+    end
+    
+    SetupButtonHover(self.MinimizeBtn, Color3.fromRGB(80, 80, 100))
+    SetupButtonHover(self.CloseBtn, Color3.fromRGB(200, 60, 60))
+end
+
+function NeoUILib:ToggleMinimize()
+    self.IsMinimized = not self.IsMinimized
+    if self.IsMinimized then
+        SmoothTween(self.MainFrame, {Size = UDim2.new(0, 500, 0, 40)}, 0.3)
+        self.ContentArea.Visible = false
+    else
+        SmoothTween(self.MainFrame, {Size = UDim2.new(0, 500, 0, 400)}, 0.3)
+        self.ContentArea.Visible = true
+    end
+end
+
+function NeoUILib:Close()
+    SmoothTween(self.MainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.3)
+    wait(0.3)
+    self.Gui:Destroy()
+end
+
+function NeoUILib:AddTab(tabName, tabIcon)
+    local tabId = "Tab_" .. #self.Tabs + 1
+    
+    -- زر التبويب في الشريط الجانبي
+    local tabButton = Create("TextButton", {
+        Name = tabId,
+        Text = "",
+        Size = UDim2.new(1, -10, 0, 40),
+        Position = UDim2.new(0, 5, 0, #self.Tabs * 45 + 10),
+        BackgroundColor3 = NeoConfig.Secondary,
+        AutoButtonColor = false
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = tabButton})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = tabButton})
+    
+    -- أيقونة التبويب
+    local icon = Create("ImageLabel", {
+        Name = "Icon",
+        Image = tabIcon or "rbxassetid://10734948820",
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(0, 10, 0.5, -10),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundTransparency = 1,
+        ImageColor3 = NeoConfig.SubText
+    })
+    
+    -- نص التبويب
+    local label = Create("TextLabel", {
+        Name = "Label",
+        Text = tabName,
+        TextColor3 = NeoConfig.SubText,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 35, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    -- مؤشر النشاط
+    local indicator = Create("Frame", {
+        Name = "Indicator",
+        Size = UDim2.new(0, 3, 0, 0),
+        Position = UDim2.new(0, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = NeoConfig.Accent,
+        Visible = false
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = indicator})
+    
+    -- تجميع عناصر التبويب
+    icon.Parent = tabButton
+    label.Parent = tabButton
+    indicator.Parent = tabButton
+    tabButton.Parent = self.Sidebar
+    
+    -- إنشاء محتوى التبويب
+    local tabContent = Create("ScrollingFrame", {
+        Name = tabId .. "_Content",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = NeoConfig.Border,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        Visible = #self.Tabs == 0 -- أول تبويب يكون مرئياً
+    })
+    
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 10),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = tabContent
+    })
+    
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 10),
+        PaddingLeft = UDim.new(0, 10),
+        PaddingRight = UDim.new(0, 10),
+        Parent = tabContent
+    })
+    
+    tabContent.Parent = self.MainContent
+    
+    -- تخزين بيانات التبويب
+    local tabData = {
+        Button = tabButton,
+        Content = tabContent,
+        Indicator = indicator,
+        Label = label,
+        Icon = icon,
+        Elements = {}
+    }
+    
+    table.insert(self.Tabs, tabData)
+    
+    -- إعداد حدث النقر
+    tabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab(#self.Tabs)
+    end)
+    
+    -- إذا كان هذا أول تبويب، فعّله
+    if #self.Tabs == 1 then
+        self:SwitchTab(1)
+    end
+    
+    -- تأثيرات Hover
+    tabButton.MouseEnter:Connect(function()
+        if self.CurrentTab ~= #self.Tabs then
+            SmoothTween(tabButton, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.2)
+            SmoothTween(label, {TextColor3 = NeoConfig.Text}, 0.2)
+            SmoothTween(icon, {ImageColor3 = NeoConfig.Text}, 0.2)
+        end
+    end)
+    
+    tabButton.MouseLeave:Connect(function()
+        if self.CurrentTab ~= #self.Tabs then
+            SmoothTween(tabButton, {BackgroundColor3 = NeoConfig.Secondary}, 0.2)
+            SmoothTween(label, {TextColor3 = NeoConfig.SubText}, 0.2)
+            SmoothTween(icon, {ImageColor3 = NeoConfig.SubText}, 0.2)
+        end
+    end)
+    
+    return tabContent
+end
+
+function NeoUILib:SwitchTab(tabIndex)
+    if self.CurrentTab == tabIndex then return end
+    
+    -- إخفاء جميع التبويبات
+    for i, tab in ipairs(self.Tabs) do
+        tab.Content.Visible = false
+        tab.Indicator.Visible = false
+        SmoothTween(tab.Button, {BackgroundColor3 = NeoConfig.Secondary}, 0.2)
+        SmoothTween(tab.Label, {TextColor3 = NeoConfig.SubText}, 0.2)
+        SmoothTween(tab.Icon, {ImageColor3 = NeoConfig.SubText}, 0.2)
+    end
+    
+    -- إظهار التبويب المحدد
+    local targetTab = self.Tabs[tabIndex]
+    targetTab.Content.Visible = true
+    targetTab.Indicator.Visible = true
+    
+    SmoothTween(targetTab.Button, {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}, 0.2)
+    SmoothTween(targetTab.Label, {TextColor3 = NeoConfig.Text}, 0.2)
+    SmoothTween(targetTab.Icon, {ImageColor3 = NeoConfig.Accent}, 0.2)
+    SmoothTween(targetTab.Indicator, {Size = UDim2.new(0, 3, 0, 20)}, 0.3)
+    
+    self.CurrentTab = tabIndex
+end
+
+-- دالة لإضافة الأقسام
+function NeoUILib:AddSection(parent, title)
+    local section = Create("Frame", {
+        Name = "Section",
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = NeoConfig.Secondary,
+        BackgroundTransparency = 0.1,
+        LayoutOrder = #parent:GetChildren()
+    })
+    
+    Create("UICorner", {CornerRadius = NeoConfig.CornerRadius, Parent = section})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = section})
+    
+    local titleLabel = Create("TextLabel", {
+        Name = "Title",
+        Text = title or "Section",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 16,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local content = Create("Frame", {
+        Name = "Content",
+        Size = UDim2.new(1, -20, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        Position = UDim2.new(0, 10, 0, 35),
+        BackgroundTransparency = 1
+    })
+    
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = content
+    })
+    
+    titleLabel.Parent = section
+    content.Parent = section
+    section.Parent = parent
+    
+    return content
+end
+
+-- دالة إضافة زر
+function NeoUILib:AddButton(parent, config)
+    config = config or {}
+    
+    local button = Create("TextButton", {
+        Name = "Button",
+        Text = config.Text or "Button",
+        Size = UDim2.new(1, 0, 0, 35),
+        BackgroundColor3 = NeoConfig.Secondary,
+        TextColor3 = NeoConfig.Text,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        AutoButtonColor = false,
+        LayoutOrder = #parent:GetChildren()
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = button})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = button})
+    
+    -- تأثيرات الزر
+    button.MouseEnter:Connect(function()
+        SmoothTween(button, {
+            BackgroundColor3 = Color3.fromRGB(45, 45, 65),
+            TextColor3 = NeoConfig.Accent
+        }, 0.2)
+    end)
+    
+    button.MouseLeave:Connect(function()
+        SmoothTween(button, {
+            BackgroundColor3 = NeoConfig.Secondary,
+            TextColor3 = NeoConfig.Text
+        }, 0.2)
+    end)
+    
+    button.MouseButton1Click:Connect(function()
+        if config.Callback then
+            pcall(config.Callback)
+        end
+        
+        -- تأثير النقر
+        SmoothTween(button, {BackgroundColor3 = NeoConfig.Accent}, 0.1)
+        wait(0.1)
+        SmoothTween(button, {BackgroundColor3 = Color3.fromRGB(45, 45, 65)}, 0.1)
+    end)
+    
+    button.Parent = parent
+    return button
+end
+
+-- دالة إضافة Toggle
+function NeoUILib:AddToggle(parent, config)
+    config = config or {}
+    
+    local toggleFrame = Create("Frame", {
+        Name = "Toggle",
+        Size = UDim2.new(1, 0, 0, 30),
+        BackgroundTransparency = 1,
+        LayoutOrder = #parent:GetChildren()
+    })
+    
+    local label = Create("TextLabel", {
+        Name = "Label",
+        Text = config.Text or "Toggle",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -50, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local toggleButton = Create("TextButton", {
+        Name = "ToggleButton",
+        Text = "",
+        Size = UDim2.new(0, 45, 0, 20),
+        Position = UDim2.new(1, -45, 0.5, -10),
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundColor3 = NeoConfig.Secondary,
+        AutoButtonColor = false
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = toggleButton})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = toggleButton})
+    
+    local toggleKnob = Create("Frame", {
+        Name = "Knob",
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, 2, 0.5, -8),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = NeoConfig.Text,
+        BackgroundTransparency = 0.1
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = toggleKnob})
+    
+    local state = config.Default or false
+    
+    local function updateToggle()
+        if state then
+            SmoothTween(toggleButton, {BackgroundColor3 = NeoConfig.Success}, 0.2)
+            SmoothTween(toggleKnob, {Position = UDim2.new(1, -18, 0.5, -8)}, 0.2)
+        else
+            SmoothTween(toggleButton, {BackgroundColor3 = NeoConfig.Secondary}, 0.2)
+            SmoothTween(toggleKnob, {Position = UDim2.new(0, 2, 0.5, -8)}, 0.2)
+        end
+    end
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        state = not state
+        updateToggle()
+        if config.Callback then
+            pcall(config.Callback, state)
+        end
+    end)
+    
+    updateToggle()
+    
+    toggleKnob.Parent = toggleButton
+    label.Parent = toggleFrame
+    toggleButton.Parent = toggleFrame
+    toggleFrame.Parent = parent
+    
+    return {
+        SetState = function(newState)
+            state = newState
+            updateToggle()
+        end,
+        GetState = function()
+            return state
+        end
+    }
+end
+
+-- دالة إضافة Slider
+function NeoUILib:AddSlider(parent, config)
+    config = config or {}
+    
+    local sliderFrame = Create("Frame", {
+        Name = "Slider",
+        Size = UDim2.new(1, 0, 0, 50),
+        BackgroundTransparency = 1,
+        LayoutOrder = #parent:GetChildren()
+    })
+    
+    local label = Create("TextLabel", {
+        Name = "Label",
+        Text = config.Text or "Slider",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local valueLabel = Create("TextLabel", {
+        Name = "Value",
+        Text = tostring(config.Default or config.Min or 0),
+        TextColor3 = NeoConfig.SubText,
+        TextSize = 12,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -40, 0, 0),
+        AnchorPoint = Vector2.new(1, 0),
+        TextXAlignment = Enum.TextXAlignment.Right
+    })
+    
+    local track = Create("Frame", {
+        Name = "Track",
+        Size = UDim2.new(1, 0, 0, 6),
+        Position = UDim2.new(0, 0, 1, -15),
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundColor3 = NeoConfig.Secondary
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = track})
+    
+    local fill = Create("Frame", {
+        Name = "Fill",
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = NeoConfig.Accent
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = fill})
+    
+    local knob = Create("Frame", {
+        Name = "Knob",
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(0, 0, 0.5, -8),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundColor3 = NeoConfig.Text,
+        ZIndex = 2
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = knob})
+    ApplyShadow(knob)
+    
+    local min = config.Min or 0
+    local max = config.Max or 100
+    local value = config.Default or min
+    
+    local function updateSlider(visualOnly)
+        local percentage = (value - min) / (max - min)
+        fill.Size = UDim2.new(percentage, 0, 1, 0)
+        knob.Position = UDim2.new(percentage, 0, 0.5, -8)
+        valueLabel.Text = tostring(math.floor(value))
+        
+        if not visualOnly and config.Callback then
+            pcall(config.Callback, value)
+        end
+    end
+    
+    local dragging = false
+    
+    track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+        end
+    end)
+    
+    track.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mousePos = UserInputService:GetMouseLocation()
+            local trackAbs = track.AbsolutePosition
+            local trackSize = track.AbsoluteSize.X
+            local relativeX = (mousePos.X - trackAbs.X) / trackSize
+            relativeX = math.clamp(relativeX, 0, 1)
+            value = min + (max - min) * relativeX
+            value = math.floor(value)
+            updateSlider()
+        end
+    end)
+    
+    fill.Parent = track
+    knob.Parent = track
+    track.Parent = sliderFrame
+    valueLabel.Parent = sliderFrame
+    label.Parent = sliderFrame
+    sliderFrame.Parent = parent
+    
+    updateSlider(true)
+    
+    return {
+        SetValue = function(newValue)
+            value = math.clamp(newValue, min, max)
+            updateSlider(true)
+        end,
+        GetValue = function()
+            return value
+        end
+    }
+end
+
+-- دالة إضافة Dropdown
+function NeoUILib:AddDropdown(parent, config)
+    config = config or {}
+    
+    local dropdownFrame = Create("Frame", {
+        Name = "Dropdown",
+        Size = UDim2.new(1, 0, 0, 35),
+        BackgroundColor3 = NeoConfig.Secondary,
+        LayoutOrder = #parent:GetChildren(),
+        ClipsDescendants = true
+    })
+    
+    Create("UICorner", {CornerRadius = NeoConfig.CornerRadius, Parent = dropdownFrame})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = dropdownFrame})
+    
+    local label = Create("TextLabel", {
+        Name = "Label",
+        Text = config.Text or "Dropdown",
+        TextColor3 = NeoConfig.Text,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local arrow = Create("ImageLabel", {
+        Name = "Arrow",
+        Image = "rbxassetid://10709790948",
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(1, -25, 0.5, -10),
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        ImageColor3 = NeoConfig.SubText,
+        Rotation = 0
+    })
+    
+    local optionsFrame = Create("ScrollingFrame", {
+        Name = "Options",
+        Size = UDim2.new(1, 0, 0, 0),
+        Position = UDim2.new(0, 0, 1, 5),
+        BackgroundColor3 = NeoConfig.Secondary,
+        ScrollBarThickness = 4,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        Visible = false
+    })
+    
+    Create("UICorner", {CornerRadius = NeoConfig.CornerRadius, Parent = optionsFrame})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = optionsFrame})
+    
+    Create("UIListLayout", {
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = optionsFrame
+    })
+    
+    local options = config.Options or {"Option 1", "Option 2", "Option 3"}
+    local selected = config.Default or options[1]
+    local isOpen = false
+    
+    local function updateDropdown()
+        label.Text = selected
+    end
+    
+    local function toggleDropdown()
+        isOpen = not isOpen
+        if isOpen then
+            SmoothTween(optionsFrame, {Size = UDim2.new(1, 0, 0, math.min(#options * 30, 150))}, 0.3)
+            SmoothTween(arrow, {Rotation = 180}, 0.3)
+            optionsFrame.Visible = true
+        else
+            SmoothTween(optionsFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.3)
+            SmoothTween(arrow, {Rotation = 0}, 0.3)
+            wait(0.3)
+            optionsFrame.Visible = false
+        end
+    end
+    
+    -- إنشاء الخيارات
+    for i, option in ipairs(options) do
+        local optionButton = Create("TextButton", {
+            Name = option,
+            Text = option,
+            Size = UDim2.new(1, -10, 0, 25),
+            Position = UDim2.new(0, 5, 0, (i-1)*30),
+            BackgroundColor3 = NeoConfig.Secondary,
+            TextColor3 = NeoConfig.Text,
+            TextSize = 12,
+            Font = NeoConfig.Font,
+            AutoButtonColor = false
+        })
+        
+        Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = optionButton})
+        
+        optionButton.MouseEnter:Connect(function()
+            SmoothTween(optionButton, {BackgroundColor3 = Color3.fromRGB(50, 50, 70)}, 0.2)
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            SmoothTween(optionButton, {BackgroundColor3 = NeoConfig.Secondary}, 0.2)
+        end)
+        
+        optionButton.MouseButton1Click:Connect(function()
+            selected = option
+            updateDropdown()
+            toggleDropdown()
+            if config.Callback then
+                pcall(config.Callback, option)
+            end
+        end)
+        
+        optionButton.Parent = optionsFrame
+    end
+    
+    dropdownFrame.MouseButton1Click:Connect(toggleDropdown)
+    updateDropdown()
+    
+    arrow.Parent = dropdownFrame
+    label.Parent = dropdownFrame
+    optionsFrame.Parent = dropdownFrame
+    dropdownFrame.Parent = parent
+    
+    return {
+        SetValue = function(newValue)
+            if table.find(options, newValue) then
+                selected = newValue
+                updateDropdown()
+            end
+        end,
+        GetValue = function()
+            return selected
+        end
+    }
+end
+
+-- دالة إضافة إشعار
+function NeoUILib:Notify(title, message, notificationType)
+    notificationType = notificationType or "Info"
+    
+    local notification = Create("Frame", {
+        Name = "Notification",
+        Size = UDim2.new(0, 300, 0, 0),
+        Position = UDim2.new(1, -320, 1, -80),
+        AnchorPoint = Vector2.new(1, 1),
+        BackgroundColor3 = NeoConfig.Secondary,
+        ClipsDescendants = true
+    })
+    
+    ApplyShadow(notification)
+    Create("UICorner", {CornerRadius = NeoConfig.CornerRadius, Parent = notification})
+    Create("UIStroke", {Color = NeoConfig.Border, Thickness = 1, Parent = notification})
+    
+    local accentColor = NeoConfig.Accent
+    if notificationType == "Success" then
+        accentColor = NeoConfig.Success
+    elseif notificationType == "Warning" then
+        accentColor = NeoConfig.Warning
+    elseif notificationType == "Error" then
+        accentColor = NeoConfig.Error
+    end
+    
+    local accentBar = Create("Frame", {
+        Name = "AccentBar",
+        Size = UDim2.new(0, 4, 1, 0),
+        BackgroundColor3 = accentColor
+    })
+    
+    Create("UICorner", {CornerRadius = UDim.new(0, 2), Parent = accentBar})
+    
+    local titleLabel = Create("TextLabel", {
+        Name = "Title",
+        Text = title,
+        TextColor3 = NeoConfig.Text,
+        TextSize = 16,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -20, 0, 25),
+        Position = UDim2.new(0, 15, 0, 10),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local messageLabel = Create("TextLabel", {
+        Name = "Message",
+        Text = message,
+        TextColor3 = NeoConfig.SubText,
+        TextSize = 14,
+        Font = NeoConfig.Font,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -20, 0, 0),
+        Position = UDim2.new(0, 15, 0, 35),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+        AutomaticSize = Enum.AutomaticSize.Y
+    })
+    
+    accentBar.Parent = notification
+    titleLabel.Parent = notification
+    messageLabel.Parent = notification
+    notification.Parent = self.Gui
+    
+    -- تحريك الإشعار
+    local targetHeight = messageLabel.TextBounds.Y + 50
+    SmoothTween(notification, {Size = UDim2.new(0, 300, 0, targetHeight)}, 0.3)
+    
+    -- إخفاء تلقائي بعد 5 ثواني
+    task.delay(5, function()
+        if notification then
+            SmoothTween(notification, {Size = UDim2.new(0, 300, 0, 0)}, 0.3)
+            wait(0.3)
+            notification:Destroy()
+        end
+    end)
+end
+
+return NeoUILib
